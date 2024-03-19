@@ -1,14 +1,18 @@
 <?php
 require_once dirname(__DIR__).DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."class-sop-functions.php";
 
+
 $QRY_STRING =  SOP_Functions::encrypt_decrypt($_REQUEST['cue'],'decrypt');
 
 parse_str($QRY_STRING, $QUERY_STRING);
 $orderId = !empty($QUERY_STRING['id'])?$QUERY_STRING['id']:'';
+$total = !empty($QUERY_STRING['total'])?$QUERY_STRING['total']:'';
+$currency = !empty($QUERY_STRING['currency'])?$QUERY_STRING['currency']:'';
 $AFFID = !empty($QUERY_STRING['AFFID'])?$QUERY_STRING['AFFID']:'';
-$_SESSION['__AFFID__'] = $AFFID;
-print_r($QUERY_STRING);
 require_once dirname(__DIR__).DIRECTORY_SEPARATOR."library".DIRECTORY_SEPARATOR."require.php";
+
+
+print_r($_SESSION);
 ?>
 
 <link rel="stylesheet" href="<?php echo plugin_dir_url( __DIR__ ) ?>template/assets/style.css">
@@ -34,7 +38,7 @@ require_once dirname(__DIR__).DIRECTORY_SEPARATOR."library".DIRECTORY_SEPARATOR.
 </div>
 
 <?php
-$paymentid = 'Simulate';
+$paymentid = $_REQUEST['id'];
 $OrderData = $WC->GetOrderData($orderId);
 $wc_key = !empty($QUERY_STRING['wc_key'])?$QUERY_STRING['wc_key']:'';
 
@@ -51,7 +55,10 @@ $UpdateData = [
 
 $UpdateStatus = $WC->UpdateOrder($orderId,$UpdateData);
 $WC->AddOrderNote( $orderId,'Stripe charge complete (Charge ID: '.$paymentid.' )' );
-echo $url = $SOP_WooCommerce_Config['offer_url']."checkout/order-received/" . $orderId . "/?key=" .$wc_key. "&paymentid=" . $paymentid;
+$url = $SOP_WooCommerce_Config['offer_url']."checkout/order-received/" . $orderId . "/?key=" .$wc_key. "&paymentid=" . $paymentid;
 
+header("Location: ".$url);
+die();
+    
 
 ?>
