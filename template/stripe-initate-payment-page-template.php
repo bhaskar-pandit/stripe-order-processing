@@ -53,7 +53,7 @@ $typageurl = $hosted_page_details['ThankYouPage']['permalink'];
 
 $SiteTitle = 'Payment for order #'.$orderId;
 $OrderTotal = $total * 100;
-echo $typageurl = $typageurl.'?code='.$logCode.'&id={CHECKOUT_SESSION_ID}';
+$typageurl = $typageurl.'?code='.$logCode.'&id={CHECKOUT_SESSION_ID}';
 try {
     $StripePriceRes = $STRIPE->stripePriceCreate($currency,$OrderTotal,$SiteTitle);
     $errorMessage = "";
