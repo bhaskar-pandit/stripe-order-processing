@@ -16,6 +16,7 @@ include_once(ABSPATH . 'wp-admin/includes/plugin.php');
 
 // Function to create pages upon activation
 function create_pages_on_activation() {
+    global $wpdb;
     // Create page 1
     $page1_title = 'Stripe Initate Payment Page';
     $page1_content = 'Stripe Initate Payment Page';
@@ -60,8 +61,25 @@ function create_pages_on_activation() {
     update_post_meta($page2_id, '_wp_page_template', $page2_template);
 
     update_option('stripe_hosted_page_details', $pageData);
-    
 
+
+    $table_name = $wpdb->prefix . 'sop_order_log';
+
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $table_name (
+        id int NOT NULL AUTO_INCREMENT,
+        log_code varchar(500) NOT NULL,
+        order_id int NOT NULL,
+        payment_url varchar(500),
+        query_data LONGTEXT NOT NULL,
+        status ENUM('1','0') NOT NULL DEFAULT '1',
+        created_at datetime DEFAULT CURRENT_TIMESTAMP() NOT NULL,
+        PRIMARY KEY (id)
+    ) $charset_collate;";
+
+    require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+    dbDelta( $sql );
 }
 
 // Hook the function to the activation hook of the plugin
@@ -88,8 +106,10 @@ function delete_pages_on_deactivation() {
 register_deactivation_hook(__FILE__, 'delete_pages_on_deactivation');
 
 class WC_Stripe_Order_Processing {
+    public $wpdb;
 
 	public function __construct() {
+        
         require_once 'includes/class-admin-settings-display.php';
 
 		add_action( 'plugins_loaded', array( $this, 'init' ) );
@@ -98,14 +118,17 @@ class WC_Stripe_Order_Processing {
         
         add_action( 'admin_menu', array( $this, 'sop_add_admin_menu' ) );
         add_action( 'admin_init', array( $this, 'sop_initialize_settings' )  );
+        
 
-
+        
 
 	}
 
     public function init() {
-
+        global $wpdb;
 		$hosted_page_details = get_option('stripe_hosted_page_details');
+        $this->wpdb = $wpdb;
+
         
         // print_r($hosted_page_details);
 	}

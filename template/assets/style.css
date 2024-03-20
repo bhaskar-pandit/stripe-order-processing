@@ -1,5 +1,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap");
 
+:root {
+	--primary-color: #011918;
+	--danger-color: #e56f6f;
+	--white-color: #fff;
+}
 * {
 	padding: 0;
 	margin: 0;
@@ -12,100 +17,20 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: #fff;
+	background: var(--white-color);
 	position: relative;
 	z-index: 999;
 	text-align: center;
 }
 .loader__container h2 {
 	margin: 30px 0 10px;
-	color: #00cdc8;
+	color: var(--primary-color);
 }
 .loader__container img {
 	width: 250px;
 }
 
 /* success loader start */
-#tick {
-	stroke: #00cdc8;
-	stroke-width: 6;
-	transition: all 1s;
-}
-
-#circle {
-	stroke: #00cdc8;
-	stroke-width: 6;
-	transform-origin: 50px 50px 0;
-	transition: all 1s;
-}
-
-.progress #tick {
-	opacity: 0;
-}
-
-.ready #tick {
-	stroke-dasharray: 1000;
-	stroke-dashoffset: 1000;
-	animation: draw 8s ease-out forwards;
-}
-
-.progress #circle {
-	stroke: #4c4c4c;
-	stroke-dasharray: 314;
-	stroke-dashoffset: 1000;
-	animation: spin 3s linear infinite;
-}
-
-.ready #circle {
-	stroke-dashoffset: 66;
-	stroke: #00cdc8;
-}
-
-#circle {
-	stroke-dasharray: 500;
-}
-
-@keyframes spin {
-	0% {
-		transform: rotate(0deg);
-		stroke-dashoffset: 66;
-	}
-	50% {
-		transform: rotate(540deg);
-		stroke-dashoffset: 314;
-	}
-	100% {
-		transform: rotate(1080deg);
-		stroke-dashoffset: 66;
-	}
-}
-
-@keyframes draw {
-	to {
-		stroke-dashoffset: 0;
-	}
-}
-
-#check {
-	width: 130px;
-	height: 130px;
-}
-
-/* success loader end */
-
-/* demo */
-@keyframes moveCircle {
-	0% {
-		transform: translateX(0) translateY(50px) rotate(-10deg);
-	}
-	100% {
-		transform: translateX(0) translateY(50px) rotate(-18deg);
-	} /* 5% of a full circle */
-}
-
-#card_animation {
-	animation: moveCircle 1.5s infinite linear;
-}
 .icon__container #card {
 	width: 350px !important;
 	height: 220px !important;
@@ -157,3 +82,45 @@
 		stroke-dashoffset: 90;
 	}
 }
+/* success loader End */
+
+/* Error Message start */
+.error h2 {
+	color: var(--danger-color);
+}
+#error {
+	width: 130px;
+	height: 130px;
+}
+#circle {
+	stroke-dasharray: 500;
+}
+#error line {
+	stroke: var(--danger-color);
+	stroke-width: 6;
+	transition: all 1s;
+}
+
+#error #circle {
+	stroke: var(--danger-color);
+	stroke-width: 6;
+	transform-origin: 50px 50px 0;
+	transition: all 1s;
+	animation: spin 2s linear infinite; /* Adding animation for spinning */
+}
+
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+		stroke-dashoffset: 66;
+	}
+	50% {
+		transform: rotate(540deg);
+		stroke-dashoffset: 314;
+	}
+	100% {
+		transform: rotate(1080deg);
+		stroke-dashoffset: 66;
+	}
+}
+/* Error Message end */

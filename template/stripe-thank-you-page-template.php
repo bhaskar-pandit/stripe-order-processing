@@ -1,18 +1,24 @@
 <?php
 require_once dirname(__DIR__).DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."class-sop-functions.php";
+global $wpdb;
+
+$table_name = $wpdb->prefix . 'sop_order_log';
+$code = !empty($_REQUEST['code'])?$_REQUEST['code']:'';
+
+$sql = "SELECT * FROM $table_name WHERE log_code = $code AND status = 1";
+$results = $wpdb->get_results( $sql );
 
 
-$QRY_STRING =  SOP_Functions::encrypt_decrypt($_REQUEST['cue'],'decrypt');
-
-parse_str($QRY_STRING, $QUERY_STRING);
-$orderId = !empty($QUERY_STRING['id'])?$QUERY_STRING['id']:'';
-$total = !empty($QUERY_STRING['total'])?$QUERY_STRING['total']:'';
-$currency = !empty($QUERY_STRING['currency'])?$QUERY_STRING['currency']:'';
-$AFFID = !empty($QUERY_STRING['AFFID'])?$QUERY_STRING['AFFID']:'';
-require_once dirname(__DIR__).DIRECTORY_SEPARATOR."library".DIRECTORY_SEPARATOR."require.php";
-
-
-print_r($_SESSION);
+$dataNeedProcessed = 0;
+if (sizeof($results) > 0) {
+    $QUERY_STRING = json_decode($results[0]->query_data,true);
+    $orderId = !empty($QUERY_STRING['id'])?$QUERY_STRING['id']:'';
+    $total = !empty($QUERY_STRING['total'])?$QUERY_STRING['total']:'';
+    $currency = !empty($QUERY_STRING['currency'])?$QUERY_STRING['currency']:'';
+    $AFFID = !empty($QUERY_STRING['AFFID'])?$QUERY_STRING['AFFID']:'';
+    require_once dirname(__DIR__).DIRECTORY_SEPARATOR."library".DIRECTORY_SEPARATOR."require.php";
+    $dataNeedProcessed = 1;
+}
 ?>
 
 <link rel="stylesheet" href="<?php echo plugin_dir_url( __DIR__ ) ?>template/assets/style.css">
@@ -38,27 +44,39 @@ print_r($_SESSION);
 </div>
 
 <?php
-$paymentid = $_REQUEST['id'];
-$OrderData = $WC->GetOrderData($orderId);
-$wc_key = !empty($QUERY_STRING['wc_key'])?$QUERY_STRING['wc_key']:'';
+if ($dataNeedProcessed == 1) {
+    $paymentid = $_REQUEST['id'];
+    $OrderData = $WC->GetOrderData($orderId);
+    $wc_key = !empty($QUERY_STRING['wc_key'])?$QUERY_STRING['wc_key']:'';
 
 
-$UpdateData = [
-    'status' => 'processing',
-    'meta_data' => [
-        [
-            'key'=> 'stripe_payment_id',
-            'value'=> $paymentid
-        ]
-    ],
-];
+    $UpdateData = [
+        'status' => 'processing',
+        'meta_data' => [
+            [
+                'key'=> 'stripe_payment_id',
+                'value'=> $paymentid
+            ]
+        ],
+    ];
 
-$UpdateStatus = $WC->UpdateOrder($orderId,$UpdateData);
-$WC->AddOrderNote( $orderId,'Stripe charge complete (Charge ID: '.$paymentid.' )' );
-$url = $SOP_WooCommerce_Config['offer_url']."checkout/order-received/" . $orderId . "/?key=" .$wc_key. "&paymentid=" . $paymentid;
+    $UpdateStatus = $WC->UpdateOrder($orderId,$UpdateData);
+    $WC->AddOrderNote( $orderId,'Stripe charge complete (Charge ID: '.$paymentid.' )' );
+    $url = $SOP_WooCommerce_Config['offer_url']."checkout/order-received/" . $orderId . "/?key=" .$wc_key. "&paymentid=" . $paymentid;
 
-header("Location: ".$url);
-die();
+
+    $wpdb->update(
+        $table_name,
+        array(
+            'status' => 0
+        ),
+        array( 'log_code' => $code )
+    );
+
+    header("Location: ".$url);
+    die();
+}
+
     
 
 ?>
