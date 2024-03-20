@@ -49,16 +49,15 @@ try {
 $hosted_page_details = get_option('stripe_hosted_page_details');
 
 $typageurl = $hosted_page_details['ThankYouPage']['permalink'];
-// $typageurl = 'https://gopher-driving-thoroughly.ngrok-free.app/Woo-Stripe/safe/stripe-thank-you-page/';
+$typageurl = 'https://gopher-driving-thoroughly.ngrok-free.app/Woo-Stripe/safe/stripe-thank-you-page/';
 
 $SiteTitle = 'Payment for order #'.$orderId;
 $OrderTotal = $total * 100;
-$typageurl = $typageurl.'?code='.$logCode.'&id={CHECKOUT_SESSION_ID}';
+echo $typageurl = $typageurl.'?code='.$logCode.'&id={CHECKOUT_SESSION_ID}';
 try {
     $StripePriceRes = $STRIPE->stripePriceCreate($currency,$OrderTotal,$SiteTitle);
     $errorMessage = "";
     if ($StripePriceRes['result'] == 'succeeded') {
-        $typageurl = $typageurl.'?code='.$logCode.'&id={CHECKOUT_SESSION_ID}';
         $metaData = [
             'order_id' => $orderId,
         ];
