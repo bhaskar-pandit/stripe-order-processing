@@ -105,6 +105,9 @@ function delete_pages_on_deactivation() {
 // Hook the function to the deactivation hook of the plugin
 register_deactivation_hook(__FILE__, 'delete_pages_on_deactivation');
 
+
+
+
 class WC_Stripe_Order_Processing {
     public $wpdb;
 
@@ -120,9 +123,108 @@ class WC_Stripe_Order_Processing {
         add_action( 'admin_init', array( $this, 'sop_initialize_settings' )  );
         
 
-        
+        add_action( 'wp_ajax_nopriv_initate_payment', array( $this, 'sop_initate_payment' ));
+        add_action( 'wp_ajax_initate_payment', array( $this, 'sop_initate_payment' ) );
 
 	}
+
+    public function sop_initate_payment() {
+                
+        $QRY_STRING =  $this->encrypt_decrypt($_REQUEST['cue'],'decrypt');
+
+        parse_str($QRY_STRING, $QUERY_STRING);
+        $orderId = !empty($QUERY_STRING['id'])?$QUERY_STRING['id']:'';
+        $total = !empty($QUERY_STRING['total'])?$QUERY_STRING['total']:'';
+        $currency = !empty($QUERY_STRING['currency'])?$QUERY_STRING['currency']:'';
+        $AFFID = !empty($QUERY_STRING['AFFID'])?$QUERY_STRING['AFFID']:'';
+
+        // print_r($QUERY_STRING);
+        require_once (__DIR__).DIRECTORY_SEPARATOR."library".DIRECTORY_SEPARATOR."require.php";
+
+        $_SESSION['__AFFID__'] = $AFFID;
+        $_SESSION['__QUERY_STRING__'] = $QUERY_STRING;
+
+        global $wpdb;
+        $tableName = $wpdb->prefix.'sop_order_log';
+        $logCode = rand().$orderId;
+
+        try {
+            $wpdb->insert($tableName, array(
+                'log_code' => $logCode,
+                'order_id' => $orderId,
+                'query_data' => json_encode($QUERY_STRING,true),
+            ));
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
+
+        $hosted_page_details = get_option('stripe_hosted_page_details');
+
+        $typageurl = $hosted_page_details['ThankYouPage']['permalink'];
+
+        $SiteTitle = 'Payment for order #'.$orderId;
+        $OrderTotal = $total * 100;
+        if ($_SERVER['HTTP_HOST'] !== 'localhost') {
+        
+            $typageurl = $typageurl.'?code='.$logCode.'&id={CHECKOUT_SESSION_ID}';
+
+            try {
+                $StripePriceRes = $STRIPE->stripePriceCreate($currency,$OrderTotal,$SiteTitle);
+                $errorMessage = "";
+                if ($StripePriceRes['result'] == 'succeeded') {
+                    $metaData = [
+                        'order_id' => $orderId,
+                    ];
+                    $StripePaymentLinkRes = $STRIPE->stripePaymentLinkCreate($StripePriceRes['data']['id'],$metaData,$typageurl);
+
+                    if ($StripePaymentLinkRes['result'] == 'succeeded') {
+                        $stripePaymentUrl = $StripePaymentLinkRes['data']['url'];
+
+
+                        $responseArr = [
+                            'status' => 'success',
+                            'url' => $stripePaymentUrl
+                        ];
+                        // header("Location: ".$stripePaymentUrl);
+                        // die();
+                    }
+                    else{
+                       
+                        $errorMessage = $StripePriceRes['messages'];
+                        $responseArr = [
+                            'status' => 'fail',
+                            'message' => $errorMessage
+                        ];
+                    }
+                }else{
+                    $errorMessage = $StripePriceRes['messages'];
+                     $responseArr = [
+                        'status' => 'fail',
+                        'message' => $errorMessage
+                    ];
+                }
+            } catch (\Throwable $th) {
+                $errorMessage = 'Something went wrong. Please try again later.';
+                $responseArr = [
+                    'status' => 'fail',
+                    'message' => $errorMessage
+                ];
+            }
+        }else{
+            $stripePaymentUrl = $typageurl.'?code='.$logCode.'&id=TESTID_'.rand();
+            $responseArr = [
+                'status' => 'success',
+                'url' => $stripePaymentUrl
+            ];
+           
+
+        }
+
+        echo json_encode($responseArr,true);
+        wp_die();
+    }
+
+    
 
     public function init() {
         global $wpdb;
@@ -173,6 +275,22 @@ class WC_Stripe_Order_Processing {
     }
     public function sop_initialize_settings() {
         SOP_Settings_Display::sop_initialize_settings();
+    }
+
+    public function encrypt_decrypt($string, $action = 'encrypt')
+    {
+        $encrypt_method = "AES-256-CBC";
+        $secret_key = 'AUJRDMGNSAMBJTTVUJNNGMCLC';      // user define private key
+        $secret_iv = 'bFArbEMzzguOOnN';                 // user define secret key
+        $key = hash('sha256', $secret_key);
+        $iv = substr(hash('sha256', $secret_iv), 0, 16); // sha256 is hash_hmac_algo
+        if ($action == 'encrypt') {
+            $output = openssl_encrypt($string, $encrypt_method, $key, 0, $iv);
+            $output = base64_encode($output);
+        } else if ($action == 'decrypt') {
+            $output = openssl_decrypt(base64_decode($string), $encrypt_method, $key, 0, $iv);
+        }
+        return $output;
     }
 
 }

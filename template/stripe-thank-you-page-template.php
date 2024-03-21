@@ -1,26 +1,3 @@
-<?php
-require_once dirname(__DIR__).DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."class-sop-functions.php";
-global $wpdb;
-
-$table_name = $wpdb->prefix . 'sop_order_log';
-$code = !empty($_REQUEST['code'])?$_REQUEST['code']:'';
-
-$sql = "SELECT * FROM $table_name WHERE log_code = $code AND status = 1";
-$results = $wpdb->get_results( $sql );
-
-
-$dataNeedProcessed = 0;
-if (sizeof($results) > 0) {
-    $QUERY_STRING = json_decode($results[0]->query_data,true);
-    $orderId = !empty($QUERY_STRING['id'])?$QUERY_STRING['id']:'';
-    $total = !empty($QUERY_STRING['total'])?$QUERY_STRING['total']:'';
-    $currency = !empty($QUERY_STRING['currency'])?$QUERY_STRING['currency']:'';
-    $AFFID = !empty($QUERY_STRING['AFFID'])?$QUERY_STRING['AFFID']:'';
-    require_once dirname(__DIR__).DIRECTORY_SEPARATOR."library".DIRECTORY_SEPARATOR."require.php";
-    $dataNeedProcessed = 1;
-}
-?>
-
 <link rel="stylesheet" href="<?php echo plugin_dir_url( __DIR__ ) ?>template/assets/style.css">
 <div class="loader__container">
     <div class="loader__inner">
@@ -44,6 +21,27 @@ if (sizeof($results) > 0) {
 </div>
 
 <?php
+require_once dirname(__DIR__).DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."class-sop-functions.php";
+global $wpdb;
+
+$table_name = $wpdb->prefix . 'sop_order_log';
+$code = !empty($_REQUEST['code'])?$_REQUEST['code']:'';
+
+$sql = "SELECT * FROM $table_name WHERE log_code = $code AND status = 1";
+$results = $wpdb->get_results( $sql );
+
+
+$dataNeedProcessed = 0;
+if (sizeof($results) > 0) {
+    $QUERY_STRING = json_decode($results[0]->query_data,true);
+    $orderId = !empty($QUERY_STRING['id'])?$QUERY_STRING['id']:'';
+    $total = !empty($QUERY_STRING['total'])?$QUERY_STRING['total']:'';
+    $currency = !empty($QUERY_STRING['currency'])?$QUERY_STRING['currency']:'';
+    $AFFID = !empty($QUERY_STRING['AFFID'])?$QUERY_STRING['AFFID']:'';
+    require_once dirname(__DIR__).DIRECTORY_SEPARATOR."library".DIRECTORY_SEPARATOR."require.php";
+    $dataNeedProcessed = 1;
+}
+
 if ($dataNeedProcessed == 1) {
     $paymentid = $_REQUEST['id'];
     $OrderData = $WC->GetOrderData($orderId);
