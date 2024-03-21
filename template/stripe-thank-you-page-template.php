@@ -49,7 +49,6 @@ if ($dataNeedProcessed == 1) {
     $OrderData = $WC->GetOrderData($orderId);
     $wc_key = !empty($QUERY_STRING['wc_key'])?$QUERY_STRING['wc_key']:'';
 
-
     $UpdateData = [
         'status' => 'processing',
         'meta_data' => [

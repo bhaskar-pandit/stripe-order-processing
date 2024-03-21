@@ -49,33 +49,42 @@ try {
 $hosted_page_details = get_option('stripe_hosted_page_details');
 
 $typageurl = $hosted_page_details['ThankYouPage']['permalink'];
-$typageurl = 'https://gopher-driving-thoroughly.ngrok-free.app/Woo-Stripe/safe/stripe-thank-you-page/';
+// $typageurl = 'https://gopher-driving-thoroughly.ngrok-free.app/Woo-Stripe/safe/stripe-thank-you-page/';
 
 $SiteTitle = 'Payment for order #'.$orderId;
 $OrderTotal = $total * 100;
-echo $typageurl = $typageurl.'?code='.$logCode.'&id={CHECKOUT_SESSION_ID}';
-try {
-    $StripePriceRes = $STRIPE->stripePriceCreate($currency,$OrderTotal,$SiteTitle);
-    $errorMessage = "";
-    if ($StripePriceRes['result'] == 'succeeded') {
-        $metaData = [
-            'order_id' => $orderId,
-        ];
-        $StripePaymentLinkRes = $STRIPE->stripePaymentLinkCreate($StripePriceRes['data']['id'],$metaData,$typageurl);
+if ($_SERVER['HTTP_HOST'] !== 'localhost') {
+   
+    $typageurl = $typageurl.'?code='.$logCode.'&id={CHECKOUT_SESSION_ID}';
 
-        if ($StripePaymentLinkRes['result'] == 'succeeded') {
-            $stripePaymentUrl = $StripePaymentLinkRes['data']['url'];
-            header("Location: ".$stripePaymentUrl);
-            die();
-        }
-        else{
+    try {
+        $StripePriceRes = $STRIPE->stripePriceCreate($currency,$OrderTotal,$SiteTitle);
+        $errorMessage = "";
+        if ($StripePriceRes['result'] == 'succeeded') {
+            $metaData = [
+                'order_id' => $orderId,
+            ];
+            $StripePaymentLinkRes = $STRIPE->stripePaymentLinkCreate($StripePriceRes['data']['id'],$metaData,$typageurl);
+
+            if ($StripePaymentLinkRes['result'] == 'succeeded') {
+                $stripePaymentUrl = $StripePaymentLinkRes['data']['url'];
+                header("Location: ".$stripePaymentUrl);
+                die();
+            }
+            else{
+                $errorMessage = $StripePriceRes['messages'];
+            }
+        }else{
             $errorMessage = $StripePriceRes['messages'];
         }
-    }else{
-        $errorMessage = $StripePriceRes['messages'];
+    } catch (\Throwable $th) {
+        $errorMessage = 'Something went wrong. Please try again later.';
     }
-} catch (\Throwable $th) {
-    $errorMessage = 'Something went wrong. Please try again later.';
+}else{
+    $stripePaymentUrl = $typageurl.'?code='.$logCode.'&id=TESTID_'.rand();
+
+    header("Location: ".$stripePaymentUrl);
+    die();
 }
 
 
