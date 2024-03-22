@@ -2,7 +2,7 @@
 /*
 Plugin Name: Stripe Order Processing
 Description: Stripe Order Processing.
-Version: 1.0.1
+Version: 1.0.2
 Author: Codeclouds
 Author URI: codeclouds.com
 */
