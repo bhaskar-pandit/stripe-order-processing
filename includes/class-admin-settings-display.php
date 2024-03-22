@@ -136,7 +136,7 @@ class SOP_Settings_Display {
             <td><input type="text" name="sop_woocommerce_settings[<?=$index?>][api_secret]" class="regular-text" value="<?php  echo isset($data['api_secret']) ? esc_attr($data['api_secret']) : ''; ?>" /></td>
         </tr>
         <tr>
-            <td colspan="2" scope="row"><button class="button button-secondary remove-option" type="button" >Remove WooCommerce Config</button></td>
+            <td colspan="2" scope="row"><button class="button button-secondary remove-option" style="color: red;border-color: red;" type="button" >Remove WooCommerce Config</button></td>
         </tr>
 
        <?php

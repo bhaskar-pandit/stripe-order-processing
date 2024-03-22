@@ -1,5 +1,6 @@
 
 <link rel="stylesheet" href="<?php echo plugin_dir_url( __DIR__ ) ?>template/assets/style.css">
+<title>Initate Payment</title>
 
 <div class="loader__container processing__container">
     <div class="loader__inner">
@@ -36,7 +37,8 @@
         'action' : "initate_payment",
         'ajaxurl': "<?=admin_url( 'admin-ajax.php' )?>",
         // 'ajaxurl': "https://jay-workable-locust.ngrok-free.app/Woo-Stripe/safe/wp-admin/admin-ajax.php",
-        'cue': "<?=$_REQUEST['cue']?>"
+        'cue': "<?=$_REQUEST['cue']?>",
+        'paymentid': ""
     };
 </script>
-<script src="<?php echo plugin_dir_url( __DIR__ ) ?>template/assets/strpe-order-processing.js"></script>
+<script src="<?php echo plugin_dir_url( __DIR__ ) ?>template/assets/stripe-order-processing.js"></script>

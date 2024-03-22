@@ -13,6 +13,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 include_once(ABSPATH . 'wp-admin/includes/plugin.php');
 
 
+require 'puc/plugin-update-checker.php';
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
+
+$myUpdateChecker = PucFactory::buildUpdateChecker(
+	'https://github.com/bhaskar-pandit/stripe-order-processing',
+	__FILE__,
+	'stripe-order-processing'
+);
+
+//Set the branch that contains the stable release.
+$myUpdateChecker->setBranch('main');
+
 
 // Function to create pages upon activation
 function create_pages_on_activation() {
@@ -123,12 +135,71 @@ class WC_Stripe_Order_Processing {
         add_action( 'admin_init', array( $this, 'sop_initialize_settings' )  );
         
 
-        add_action( 'wp_ajax_nopriv_initate_payment', array( $this, 'sop_initate_payment' ));
-        add_action( 'wp_ajax_initate_payment', array( $this, 'sop_initate_payment' ) );
+        add_action( 'wp_ajax_nopriv_initate_payment', array( $this, 'sop_initate_payment_process' ));
+        add_action( 'wp_ajax_initate_payment', array( $this, 'sop_initate_payment_process' ) );
+
+
+        add_action( 'wp_ajax_nopriv_thank_you', array( $this, 'sop_thank_you_process' ));
+        add_action( 'wp_ajax_thank_you', array( $this, 'sop_thank_you_process' ) );
 
 	}
 
-    public function sop_initate_payment() {
+  
+
+    
+
+    public function init() {
+        global $wpdb;
+		$hosted_page_details = get_option('stripe_hosted_page_details');
+        $this->wpdb = $wpdb;
+
+        
+        // print_r($hosted_page_details);
+	}
+
+    public function sop_page_template( $page_template ){
+        
+		$hosted_page_details = get_option('stripe_hosted_page_details');
+
+
+        if ( is_page( $hosted_page_details['InitatePaymentPage']['id'] ) ) {
+			$page_template = dirname( __FILE__ ) . '/template/stripe-initate-payment-page-template.php';
+		}
+
+
+		if ( is_page( $hosted_page_details['ThankYouPage']['id'] ) ) {
+			$page_template = dirname( __FILE__ ) . '/template/stripe-thank-you-page-template.php';
+		}
+
+
+		return $page_template;
+	}
+
+
+    public function sop_add_admin_menu() {
+        $sop_admin_page_content = array( $this, 'sop_admin_page_content' );
+
+        add_menu_page(
+            'Stripe Order Processing', // Page title
+            'SOP Settings', // Menu title
+            'manage_options', // Capability required to access the menu
+            'sop-admin-page', // Menu slug
+            $sop_admin_page_content, // Callback function to display the page content
+            'dashicons-admin-generic', // Icon URL or Dashicons class
+            9 // Position in the menu
+        );
+    }
+
+    public function sop_admin_page_content() {
+        SOP_Settings_Display::sop_admin_page_content();
+       
+    }
+    public function sop_initialize_settings() {
+        SOP_Settings_Display::sop_initialize_settings();
+    }
+
+
+    public function sop_initate_payment_process() {
                 
         $QRY_STRING =  $this->encrypt_decrypt($_REQUEST['cue'],'decrypt');
 
@@ -183,7 +254,8 @@ class WC_Stripe_Order_Processing {
 
                         $responseArr = [
                             'status' => 'success',
-                            'url' => $stripePaymentUrl
+                            'url' => $stripePaymentUrl,
+                            'message' => "Redirecting..."
                         ];
                         // header("Location: ".$stripePaymentUrl);
                         // die();
@@ -214,7 +286,8 @@ class WC_Stripe_Order_Processing {
             $stripePaymentUrl = $typageurl.'?code='.$logCode.'&id=TESTID_'.rand();
             $responseArr = [
                 'status' => 'success',
-                'url' => $stripePaymentUrl
+                'url' => $stripePaymentUrl,
+                'message' => "Simulate the payment..."
             ];
            
 
@@ -224,57 +297,71 @@ class WC_Stripe_Order_Processing {
         wp_die();
     }
 
-    
-
-    public function init() {
+    public function sop_thank_you_process() {
+                
         global $wpdb;
-		$hosted_page_details = get_option('stripe_hosted_page_details');
-        $this->wpdb = $wpdb;
 
-        
-        // print_r($hosted_page_details);
-	}
+        $table_name = $wpdb->prefix . 'sop_order_log';
+        $code = !empty($_REQUEST['cue'])?$_REQUEST['cue']:'';
 
-    public function sop_page_template( $page_template )
-	{
-        
-		$hosted_page_details = get_option('stripe_hosted_page_details');
+        $sql = "SELECT * FROM $table_name WHERE log_code = $code AND status = 1";
+        $results = $wpdb->get_results( $sql );
 
 
-        if ( is_page( $hosted_page_details['InitatePaymentPage']['id'] ) ) {
-			$page_template = dirname( __FILE__ ) . '/template/stripe-initate-payment-page-template.php';
-		}
+        $dataNeedProcessed = 0;
+        if (sizeof($results) > 0) {
+            $QUERY_STRING = json_decode($results[0]->query_data,true);
+            $orderId = !empty($QUERY_STRING['id'])?$QUERY_STRING['id']:'';
+            $total = !empty($QUERY_STRING['total'])?$QUERY_STRING['total']:'';
+            $currency = !empty($QUERY_STRING['currency'])?$QUERY_STRING['currency']:'';
+            $AFFID = !empty($QUERY_STRING['AFFID'])?$QUERY_STRING['AFFID']:'';
+            require_once (__DIR__).DIRECTORY_SEPARATOR."library".DIRECTORY_SEPARATOR."require.php";
+            $dataNeedProcessed = 1;
+        }
+
+        if ($dataNeedProcessed == 1) {
+            $paymentid = $_REQUEST['paymentid'];
+            $OrderData = $WC->GetOrderData($orderId);
+            $wc_key = !empty($QUERY_STRING['wc_key'])?$QUERY_STRING['wc_key']:'';
+
+            $UpdateData = [
+                'status' => 'processing',
+                'meta_data' => [
+                    [
+                        'key'=> 'stripe_payment_id',
+                        'value'=> $paymentid
+                    ]
+                ],
+            ];
+
+            $UpdateStatus = $WC->UpdateOrder($orderId,$UpdateData);
+            $WC->AddOrderNote( $orderId,'Stripe charge complete (Charge ID: '.$paymentid.' )' );
+            $url = $SOP_WooCommerce_Config['offer_url']."checkout/order-received/" . $orderId . "/?key=" .$wc_key. "&paymentid=" . $paymentid;
 
 
-		if ( is_page( $hosted_page_details['ThankYouPage']['id'] ) ) {
-			$page_template = dirname( __FILE__ ) . '/template/stripe-thank-you-page-template.php';
-		}
+            $wpdb->update(
+                $table_name,
+                array(
+                    'status' => 0
+                ),
+                array( 'log_code' => $code )
+            );
 
+            $responseArr = [
+                'status' => 'success',
+                'url' => $url,
+                'message' => "Payment is processed successfully..."
 
-		return $page_template;
-	}
+            ];
+        }else{
+            $responseArr = [
+                'status' => 'processed',
+                'message' => "Payment is already processed..."
+            ];  
+        }
 
-
-    public function sop_add_admin_menu() {
-        $sop_admin_page_content = array( $this, 'sop_admin_page_content' );
-
-        add_menu_page(
-            'Stripe Order Processing', // Page title
-            'SOP Settings', // Menu title
-            'manage_options', // Capability required to access the menu
-            'sop-admin-page', // Menu slug
-            $sop_admin_page_content, // Callback function to display the page content
-            'dashicons-admin-generic', // Icon URL or Dashicons class
-            9 // Position in the menu
-        );
-    }
-
-    public function sop_admin_page_content() {
-        SOP_Settings_Display::sop_admin_page_content();
-       
-    }
-    public function sop_initialize_settings() {
-        SOP_Settings_Display::sop_initialize_settings();
+        echo json_encode($responseArr,true);
+        wp_die();
     }
 
     public function encrypt_decrypt($string, $action = 'encrypt')
