@@ -1,10 +1,4 @@
 
-<?php
-
-require_once dirname(__DIR__).DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."class-sop-functions.php";
-
-
-?>
 <link rel="stylesheet" href="<?php echo plugin_dir_url( __DIR__ ) ?>template/assets/style.css">
 
 <div class="loader__container processing__container">
@@ -41,9 +35,8 @@ require_once dirname(__DIR__).DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR
     const __CONFIG__ = {
         'action' : "initate_payment",
         'ajaxurl': "<?=admin_url( 'admin-ajax.php' )?>",
+        // 'ajaxurl': "https://jay-workable-locust.ngrok-free.app/Woo-Stripe/safe/wp-admin/admin-ajax.php",
         'cue': "<?=$_REQUEST['cue']?>"
     };
-        
- 
 </script>
 <script src="<?php echo plugin_dir_url( __DIR__ ) ?>template/assets/strpe-order-processing.js"></script>
