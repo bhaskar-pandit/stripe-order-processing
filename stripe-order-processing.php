@@ -235,8 +235,8 @@ class WC_Stripe_Order_Processing {
 
         $SiteTitle = 'Payment for order #'.$orderId;
         $OrderTotal = $total * 100;
-        if ($_SERVER['HTTP_HOST'] !== 'localhost') {
-        
+        // 
+        if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on'){
             $typageurl = $typageurl.'?code='.$logCode.'&id={CHECKOUT_SESSION_ID}';
 
             try {
@@ -292,6 +292,7 @@ class WC_Stripe_Order_Processing {
            
 
         }
+        // echo $_SERVER['HTTP_HOST'];
 
         echo json_encode($responseArr,true);
         wp_die();
