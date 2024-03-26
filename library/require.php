@@ -2,12 +2,11 @@
 @ob_start();
 @session_start();
 error_reporting(E_ALL);
-ini_set('display_errors', 0);
-ini_set('display_startup_errors',0);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors',1);
 require_once (__DIR__).DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'autoload.php';
 require_once dirname(__DIR__).DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."class-woocommerce.php";
 require_once dirname(__DIR__).DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."class-stripe.php";
-
 
 
 $PluginConfig = [];

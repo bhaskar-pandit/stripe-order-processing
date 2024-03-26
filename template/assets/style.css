@@ -1,6 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap");
 
 :root {
+	--base-color: #00cdc8;
 	--primary-color: #011918;
 	--danger-color: #e56f6f;
 	--white-color: #fff;
@@ -124,3 +125,13 @@
 	}
 }
 /* Error Message end */
+
+.btn {
+	padding: 20px;
+	display: inline-block;
+	border: 2px solid var(--base-color);
+	border-radius: 25px;
+	text-decoration: none;
+	margin-top: 10px;
+	color: var(--base-color);
+}

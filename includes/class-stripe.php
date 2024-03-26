@@ -49,7 +49,7 @@ class SOP_Stripe{
                 // Something else happened, completely unrelated to Stripe
                 $ResponseData = ['result'=>'failure','messages'=>'Somthing Went Wrong...'];
             }
-
+            
             return $ResponseData;
         }
 
