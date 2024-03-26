@@ -1,4 +1,3 @@
-
 <link rel="stylesheet" href="<?php echo plugin_dir_url( __DIR__ ) ?>template/assets/style.css">
 <title>Initate Payment</title>
 
