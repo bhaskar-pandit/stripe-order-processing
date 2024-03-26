@@ -14,19 +14,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 include_once(ABSPATH . 'wp-admin/includes/plugin.php');
 
 
-require 'puc/plugin-update-checker.php';
-use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
-
-$myUpdateChecker = PucFactory::buildUpdateChecker(
-	'https://github.com/bhaskar-pandit/stripe-order-processing',
-	__FILE__,
-	'stripe-order-processing'
-);
-
-//Set the branch that contains the stable release.
-$myUpdateChecker->setBranch('main');
-
-
 // Function to create pages upon activation
 function create_pages_on_activation() {
     global $wpdb;
