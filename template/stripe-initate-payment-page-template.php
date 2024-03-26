@@ -1,10 +1,10 @@
-<link rel="stylesheet" href="<?php echo plugin_dir_url( _DIR_ ) ?>template/assets/style.css">
+<link rel="stylesheet" href="<?php echo plugin_dir_url( __DIR__ ) ?>template/assets/style.css">
 <title>Initate Payment</title>
 
 <div class="loader__container processing__container">
     <div class="loader__inner">
         <div class="icon__container">                
-                <img src="<?php echo plugin_dir_url( _DIR_ ) ?>template/assets/credit-card.gif" alt="">
+                <img src="<?php echo plugin_dir_url( __DIR__ ) ?>template/assets/credit-card.gif" alt="">
         </div>
         <div class="text__container">
             <h2>Redirecting To Secure Payment</h2>
@@ -32,7 +32,7 @@
     </div>
 </div>
 <script>
-    const _CONFIG_ = {
+    const __CONFIG__ = {
         'action' : "initate_payment",
         'ajaxurl': "<?=admin_url( 'admin-ajax.php' )?>",
         // 'ajaxurl': "https://jay-workable-locust.ngrok-free.app/Woo-Stripe/safe/wp-admin/admin-ajax.php",
