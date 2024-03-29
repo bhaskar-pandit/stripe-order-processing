@@ -15,8 +15,9 @@
             </div>
         </div>
         <div class="text__container">
-            <h2>Payment Successful!</h2>
-            <p>We are delighted to inform you that we received your payments.</p>
+            <h2>Payment Successful! Thank you for your purchase!</h2>
+            <p>Your transaction has been successfully processed. We appreciate your business.</p>
+            <h3>Redirecting to Thank You Page...</h3>
             <p id="error_message"></p>
             <a href="<?php echo get_site_url(); ?>" class="btn" style="display: none;">« Return to shop</a>
         </div>
