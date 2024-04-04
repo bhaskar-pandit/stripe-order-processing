@@ -1,3 +1,8 @@
+<script>
+    if(window.location.hash == ""){ 
+        window.location.href = window.location.pathname+"#/"+window.location.search;
+    }
+</script>
 <link rel="stylesheet" href="<?php echo plugin_dir_url( __DIR__ ) ?>template/assets/style.css">
 <title>Initate Payment</title>
 
@@ -31,12 +36,16 @@
         </div>
     </div>
 </div>
+<?php
+    $HTTP_REFERER = parse_url($_SERVER['HTTP_REFERER']);
+    parse_str($HTTP_REFERER['query'], $QUERY_STRING_ENCODE);
+?>
 <script>
     const __CONFIG__ = {
         'action' : "initate_payment",
         'ajaxurl': "<?=admin_url( 'admin-ajax.php' )?>",
         // 'ajaxurl': "https://jay-workable-locust.ngrok-free.app/Woo-Stripe/safe/wp-admin/admin-ajax.php",
-        'cue': "<?=$_REQUEST['cue']?>",
+        'cue': "<?=$QUERY_STRING_ENCODE['cue']?>",
         'paymentid': ""
     };
 </script>

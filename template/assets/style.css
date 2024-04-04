@@ -55,7 +55,8 @@
 	transform-origin: center;
 	stroke-dasharray: 380;
 	stroke-dashoffset: 380;
-	animation: circle_4 2s ease-in-out forwards;
+	/* animation: circle_4 2s ease-in-out forwards; */
+	animation: spin 2s linear infinite; /* Adding animation for spinning */
 }
 
 .check {
