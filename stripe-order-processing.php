@@ -205,6 +205,19 @@ class WC_Stripe_Order_Processing {
 
         global $wpdb;
         $tableName = $wpdb->prefix.'sop_order_log';
+
+        // Check if the link is already used or not
+        $checkLinkQuery = "SELECT * FROM $tableName WHERE order_id='$orderId' AND status='0'";
+        $linkResult = $wpdb->get_results($checkLinkQuery);
+        if(!empty($linkResult)) {
+            $responseArr = [
+                'status' => 'fail',
+                'message' => "Payment Link already used."
+            ];
+            echo json_encode($responseArr,true);
+            wp_die();
+        }
+
         $logCode = rand().$orderId;
 
         try {

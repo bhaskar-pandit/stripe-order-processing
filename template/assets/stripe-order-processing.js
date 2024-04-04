@@ -23,3 +23,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	})();
 });
+
+// document.addEventListener('DOMContentLoaded', function() {
+// 	const urlParams = new URLSearchParams(window.location.search);
+// 	const myParam = urlParams.get('cue');
+// });
