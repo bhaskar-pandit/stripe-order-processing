@@ -113,6 +113,11 @@ class WC_Stripe_Order_Processing {
 
 	public function __construct() {
         
+        // clear cache
+		if (class_exists('\LiteSpeed\Purge')) {
+            do_action('litespeed_purge_all');
+        }
+
         require_once 'includes/class-admin-settings-display.php';
 
 		add_action( 'plugins_loaded', array( $this, 'init' ) );
