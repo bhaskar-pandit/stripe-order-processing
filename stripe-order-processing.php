@@ -213,7 +213,7 @@ class WC_Stripe_Order_Processing {
             $responseArr = [
                 'status' => 'fail',
                 'message' => "Payment Link already used.",
-                'data' => $linkResult
+                // 'data' => $linkResult
             ];
             echo json_encode($responseArr,true);
             wp_die();
